@@ -147,8 +147,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public String getName(String currentUser){
         int index = currentUser.indexOf("@");
-        String userName = currentUser.substring(0, index);
-        return userName;
+        return currentUser.substring(0, index);
     }
 
 
