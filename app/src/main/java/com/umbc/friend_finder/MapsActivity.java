@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,17 +31,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
-        BlankFragment.OnFragmentInteractionListener, android.location.LocationListener {
+        MapDetailsFragment.OnFragmentInteractionListener, android.location.LocationListener {
 
     public static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
     private Button logout;
-    private String currentUser;
+    private String currentUser, userName;
     private Marker marker = null;
     private LatLng latLng = null;
     private LocationManager locationManager;
@@ -70,15 +72,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mapFragment.getMapAsync(this);
 
 
-            EditText user = findViewById(R.id.editText);
+            TextView user = findViewById(R.id.textview);
             currentUser = getIntent().getStringExtra("User");
-            user.setText(currentUser);
+            userName = getName(currentUser);
+            user.setText("Welcome " + userName);
 
             logout = findViewById(R.id.logout);
             logout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    userRef.child(currentUser).removeValue();
+                    userRef.child(removeDotfromEmailID(currentUser)).removeValue();
                     currentUser = null;
                     Intent intent = new Intent(MapsActivity.this, LoginActivity.class);
                     intent.putExtra("User", currentUser);
@@ -87,7 +90,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
             locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-            currentUser = getName(currentUser);
+//            currentUser = getName(currentUser);
             database = FirebaseDatabase.getInstance();
             userRef = database.getReference("Users");
 
@@ -98,7 +101,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     for(DataSnapshot snapshot: dataSnapshot.getChildren()){
                         float[] dist = new float[1];
                         User user = snapshot.getValue(User.class);
-                        if(user.userName.equals(currentUser)){
+                        if(user.userName.equals(userName)){
                            continue;
                         }
                         Location.distanceBetween(user.latitude, user.longitude, currentLatitude, currentLongitude, dist);
@@ -189,9 +192,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    public String removeDotfromEmailID(String email){
+        return email.replace(".", "dot");
+    }
+
     public void addUser(){
-        User user = new User(currentUser, currentLatitude, currentLongitude);
-        userRef.child(currentUser).setValue(user);
+        Date date= new Date();
+        long time = date.getTime();
+        User user = new User(userName, currentLatitude, currentLongitude, time);
+        userRef.child(removeDotfromEmailID(currentUser)).setValue(user);
 
     }
 

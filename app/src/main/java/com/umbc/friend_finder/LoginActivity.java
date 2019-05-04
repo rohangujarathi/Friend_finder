@@ -112,11 +112,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        Button signinButton = findViewById(R.id.signin);
-        signinButton.setOnClickListener(new OnClickListener() {
+        Button registerButton = findViewById(R.id.register);
+        registerButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                signIn();
+                register();
             }
         });
 
@@ -151,7 +151,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         getLoaderManager().initLoader(0, null, this);
     }
 
-    private void signIn(){{
+    private void attemptLogin(){{
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
         if(TextUtils.isEmpty(email)){
@@ -162,11 +162,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             Toast.makeText(LoginActivity.this, "Password Empty", Toast.LENGTH_SHORT).show();
             return;
         }
+        showProgress(true);
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
-                    Toast.makeText(LoginActivity.this, "Successfull", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                     FirebaseUser currentUser = mAuth.getCurrentUser();
                     Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
 
@@ -174,10 +175,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     startActivity(intent);
                 }
                 else{
-                    Toast.makeText(LoginActivity.this, "Failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Login Failed. Email or password is incorrect", Toast.LENGTH_LONG).show();
+                    showProgress(false);
                 }
             }
         });
+
     }}
 
     private boolean mayRequestContacts() {
@@ -221,7 +224,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptLogin() {
+    private void register() {
         if (mAuthTask != null) {
             return;
         }
@@ -262,7 +265,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-//            showProgress(true);
+            showProgress(true);
 //            mAuthTask = new UserLoginTask(email, password);
 //            mAuthTask.execute((Void) null);
 
@@ -279,11 +282,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         startActivity(intent);
                     }
                     else{
-                        Toast.makeText(LoginActivity.this, "Not successful", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "New User creating failed", Toast.LENGTH_LONG).show();
+                        showProgress(false);
                     }
                 }
             });
         }
+
     }
 
     private boolean isEmailValid(String email) {

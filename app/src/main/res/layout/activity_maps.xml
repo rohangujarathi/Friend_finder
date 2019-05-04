@@ -11,7 +11,7 @@
 
     <fragment
         android:id="@+id/fragment"
-        android:name="com.umbc.friend_finder.BlankFragment"
+        android:name="com.umbc.friend_finder.MapDetailsFragment"
         android:layout_weight="0"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
