@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -22,6 +23,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -30,6 +32,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.ui.IconGenerator;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -49,14 +53,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseDatabase database;
     private DatabaseReference userRef;
     double currentLatitude, currentLongitude;
-    private List<User> nearbyUsers = new ArrayList<User>();
-    private List<Marker> markers = new ArrayList<Marker>();
+    private List<User> nearbyUsers = new ArrayList<>();
+    private List<Marker> markers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        TextView user = findViewById(R.id.textview);
+        currentUser = getIntent().getStringExtra("User");
+        userName = getName(currentUser);
+        user.setText("Welcome " + userName);
+
+        logout = findViewById(R.id.logout);
+
 
         int permissionCheck = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION);
@@ -71,13 +83,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
 
-
-            TextView user = findViewById(R.id.textview);
-            currentUser = getIntent().getStringExtra("User");
-            userName = getName(currentUser);
-            user.setText("Welcome " + userName);
-
-            logout = findViewById(R.id.logout);
             logout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -90,7 +95,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
             locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-//            currentUser = getName(currentUser);
             database = FirebaseDatabase.getInstance();
             userRef = database.getReference("Users");
 
@@ -125,7 +129,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         for(Marker m : markers){
             m.remove();
-            m = null;
         }
         markers.clear();
         if(nearbyUsers.size()==0){
@@ -134,9 +137,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         for(User user:nearbyUsers){
             LatLng ll = new LatLng(user.latitude, user.longitude);
             Marker m;
-            MarkerOptions options = new MarkerOptions()
-                    .position(ll)
-                    .title(user.userName);
+            IconGenerator i = new IconGenerator(this);
+            MarkerOptions options = new MarkerOptions().
+                    icon(BitmapDescriptorFactory.fromBitmap(i.makeIcon(user.userName))).
+                    position(ll).
+                    anchor(i.getAnchorU(), i.getAnchorV());
+//            MarkerOptions options = new MarkerOptions()
+//                    .position(ll)
+//                    .title(user.userName);
             m = mMap.addMarker(options);
             m.showInfoWindow();
             markers.add(m);
@@ -173,12 +181,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (marker != null) {
             marker.remove();
         }
-        MarkerOptions options = new MarkerOptions()
-                .position(latLng)
-                .title("You");
+        IconGenerator i = new IconGenerator(this);
+        MarkerOptions options = new MarkerOptions().
+                icon(BitmapDescriptorFactory.fromBitmap(i.makeIcon("You"))).
+                position(latLng).
+                anchor(i.getAnchorU(), i.getAnchorV());
+
+//        MarkerOptions options = new MarkerOptions()
+//                .position(latLng)
+//                .title("You");
         marker = mMap.addMarker(options);
         marker.showInfoWindow();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
     }
 
     private void handleNewLocation(Location location) {
@@ -200,11 +215,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         long time = date.getTime();
         User user = new User(userName, currentLatitude, currentLongitude, time);
         userRef.child(removeDotfromEmailID(currentUser)).setValue(user);
-
     }
 
-
-    // Read from the database
+//    private void addMarkers(User user) {
+//
+//        double lat = user.latitude;
+//        double lng = user.longitude;
+//        String title = user.userName;
+//        String snippet = String.valueOf(user.timeStamp);
+//        Markers offsetItem = new Markers(lat, lng, title, snippet);
+//        mClusterManager.addItem(offsetItem);
+//
+//    }
 
 
     @SuppressLint("MissingPermission")

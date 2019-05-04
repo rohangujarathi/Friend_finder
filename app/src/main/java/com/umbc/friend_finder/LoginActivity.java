@@ -82,8 +82,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
         // Write a message to the database
-        DatabaseReference myRef = database.getReference("message");
-        myRef.setValue("Hello, World!");
+//        DatabaseReference myRef = database.getReference("message");
+//        myRef.setValue("Hello, World!");
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -166,9 +166,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                     FirebaseUser currentUser = mAuth.getCurrentUser();
                     Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
-
                     intent.putExtra("User", currentUser.getEmail());
                     startActivity(intent);
+
                 }
                 else{
                     Toast.makeText(LoginActivity.this, "Login Failed. Email or password is incorrect", Toast.LENGTH_LONG).show();
@@ -262,11 +262,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-//            mAuthTask = new UserLoginTask(email, password);
-//            mAuthTask.execute((Void) null);
-
-            //create account for first time login
-
             mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
@@ -274,17 +269,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         Toast.makeText(LoginActivity.this, "New account create successfully", Toast.LENGTH_SHORT).show();
                         FirebaseUser user = mAuth.getCurrentUser();
                         Intent intent = new Intent(LoginActivity.this, MapsActivity.class);
+                        System.out.print(user.getEmail());
                         intent.putExtra("User", user.getEmail());
                         startActivity(intent);
                     }
                     else{
-                        Toast.makeText(LoginActivity.this, "New User creating failed", Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, "New User creation failed", Toast.LENGTH_LONG).show();
                         showProgress(false);
                     }
                 }
             });
         }
-
     }
 
     private boolean isEmailValid(String email) {
