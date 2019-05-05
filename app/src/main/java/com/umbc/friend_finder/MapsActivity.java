@@ -60,21 +60,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
         TextView user = findViewById(R.id.textview);
         currentUser = getIntent().getStringExtra("User");
         userName = getName(currentUser);
         user.setText("Welcome " + userName);
-
         logout = findViewById(R.id.logout);
 
-
-        int permissionCheck = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
         int result = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
         if(result==0) {
@@ -91,6 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Intent intent = new Intent(MapsActivity.this, LoginActivity.class);
                     intent.putExtra("User", currentUser);
                     startActivity(intent);
+                    finish();
                 }
             });
             locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -216,17 +209,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         User user = new User(userName, currentLatitude, currentLongitude, time);
         userRef.child(removeDotfromEmailID(currentUser)).setValue(user);
     }
-
-//    private void addMarkers(User user) {
-//
-//        double lat = user.latitude;
-//        double lng = user.longitude;
-//        String title = user.userName;
-//        String snippet = String.valueOf(user.timeStamp);
-//        Markers offsetItem = new Markers(lat, lng, title, snippet);
-//        mClusterManager.addItem(offsetItem);
-//
-//    }
 
 
     @SuppressLint("MissingPermission")
